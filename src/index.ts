@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu, IpcMain, ipcMain } from 'electron';
 import * as path from 'path';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -6,25 +6,64 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
-const createWindow = (): void => {
+function createWindow (){
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     //fullscreen: true
     height: 600,
-    width: 800,
-  });
-
+    width: 1200,
+    webPreferences:{
+      nodeIntegration: true
+    }
+  })
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, '../src/index.html'));
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', function(){
+  createWindow()
+  // Build menu from template
+  const mainMenu = Menu.buildFromTemplate(mainMenuTemplate)
+  // Insert Menu
+  Menu.setApplicationMenu(mainMenu)
+});
+
+
+const mainMenuTemplate = [
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Add iTem'
+      },
+      {
+        label: 'Clear iTem'
+      },
+      {
+        label: 'Quit',
+        accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+        click(){ app.quit()}
+      }
+    ]
+  }
+]
+
+// First item of menu for MAC
+if(process.platform == 'darwin'){
+  mainMenuTemplate.unshift()
+}
+
+
+ipcMain.on('item:name',function(e, item){
+  
+})
+
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
