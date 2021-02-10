@@ -1,8 +1,8 @@
 {
-  "name": "my-new-app",
-  "productName": "my-new-app",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "name": "raspberry-event-screen",
+  "productName": "raspberry-event-screen",
+  "version": "0.1.0",
+  "description": "Upcomming events screen",
   "main": "dist/index.js",
   "scripts": {
     "start": "tsc && electron-forge start",
@@ -19,27 +19,29 @@
   "license": "MIT",
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+        "icon": "src/assets/img/LogoGBsq512x512.icns"
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "my_new_app"
+            "name": "raspberry-event-screen"
           }
         },
         {
           "name": "@electron-forge/maker-zip",
+          "icon": "src/assets/img/LogoGBsq512x512.icns",
           "platforms": [
             "darwin"
           ]
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
+          "config": {
+            "icon": "src/assets/img/LogoGBsq512x512.png",
+            "name": "raspberry-event-screen"
+          }
         }
       ]
     }

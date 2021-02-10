@@ -75,6 +75,7 @@ function listEvents(auth) {
   calendar.events.list({
     calendarId: 'bk6d7u7djsv3be47m4n7u7cpao@group.calendar.google.com', //'primary',
     timeMin: (new Date()).toISOString(),
+    imeMax: (new Date()).toISOString(),
     maxResults: 10,
     singleEvents: true,
     orderBy: 'startTime',

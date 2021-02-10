@@ -9,9 +9,9 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    fullscreen: true
-    //height: 600,
-    //width: 800,
+    //fullscreen: true
+    height: 600,
+    width: 800,
   });
 
   // and load the index.html of the app.
@@ -33,6 +33,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+  app.quit(); // <-- BORRAR
 });
 
 app.on('activate', () => {
