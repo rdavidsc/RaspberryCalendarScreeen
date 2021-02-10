@@ -108,3 +108,7 @@ dist
 
 # VS Code
 *.code-workspace
+
+# Security
+*token.json
+*credentials.json
