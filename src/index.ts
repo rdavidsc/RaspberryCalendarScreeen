@@ -1,12 +1,13 @@
-import { app, BrowserWindow, Menu, IpcMain, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, TouchBarPopover } from 'electron';
 import * as path from 'path';
+import * as googleCal from './modules/googleCalendar/googleCalendar';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
 }
 
-function createWindow (){
+function createWindow (htmlPath? : any){
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     //fullscreen: true
@@ -16,8 +17,10 @@ function createWindow (){
       nodeIntegration: true
     }
   })
+
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, '../src/index.html'));
+  if(!htmlPath) htmlPath = 'src/index.html'
+  mainWindow.loadFile(htmlPath);
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
@@ -26,14 +29,29 @@ function createWindow (){
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', function(){
-  createWindow()
+app.on('ready', async function(){
+
+  var htmlPath = null
+  const calendar = new googleCal.googleCalendar();
+  if(!calendar.getCredentials()){
+    htmlPath = 'src/modules/googleAuth/googleAuth.html'
+  }
+  // Autication passed
+
+  // @TODO -> Check if config file is present
+
+  // Show upcomming events
+  var events = await calendar.listEvents(calendar.oAuth2Client)
+  console.log(events)
+  htmlPath = 'src/modules/googleConnectCal/googleConnect.html'
+
+  createWindow(htmlPath)
+
   // Build menu from template
   const mainMenu = Menu.buildFromTemplate(mainMenuTemplate)
   // Insert Menu
   Menu.setApplicationMenu(mainMenu)
 });
-
 
 const mainMenuTemplate = [
   {
@@ -54,14 +72,8 @@ const mainMenuTemplate = [
   }
 ]
 
-// First item of menu for MAC
-if(process.platform == 'darwin'){
-  mainMenuTemplate.unshift()
-}
-
-
 ipcMain.on('item:name',function(e, item){
-  
+
 })
 
 

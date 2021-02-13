@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Upcomming Events - Autentication Required</title>
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="index.css">
+    <title>Upcoming Events - Autentication Required</title>
+    <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../index.css">
   </head>
   <body>
     <div class="card">
@@ -13,7 +13,7 @@
           <h1>Autentication Required</h1>
         </div>
         <div class="card-body">
-          <h2>Welcome to Upcomming Events APP</h2>
+          <h2>Welcome to Upcoming Events APP</h2>
           <p>In order to read your Google Calendar it's required to get an authentication code in the following link:</p>
           <p><a href="pages/example/example.html" class="btn btn-info">Get the authentication code</a></p>
           <p>Once you have the code come back here and insert the code:</p>
@@ -29,20 +29,6 @@
     </div>
       
     </card>
-
-    <script>
-      const electron = require('electron');
-      const {ipcRenderer} = electron;
-
-      const form = document.querySelector('form');
-      form.addEventListener('submit', submitForm);
-
-      function submitForm(e){
-        e.preventDefault();
-        const authCode = document.querySelector('#authCode').value;
-        alert(authCode);
-        ipcRenderer.send('data:authCode', authCode);
-      }
-    </script>
+    <script src="./googleAuth.js"></script>
   </body>
 </html>
