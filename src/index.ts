@@ -1,15 +1,24 @@
 import { app, BrowserWindow, Menu, ipcMain, TouchBarPopover } from 'electron';
 import * as path from 'path';
-import * as googleCal from './modules/googleCalendar/googleCalendar';
+import * as googleCal from './modules/googleCalendar/googleCalendar'
+import * as fs from 'fs'
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
 }
 
-function createWindow (htmlPath? : any){
+var mainWindow: BrowserWindow
+const calendar = new googleCal.googleCalendar();
+
+
+/**
+ * Create a new window usin a html template
+ * @param htmlTemplatePath Optional html template 
+ */
+async function createWindow (htmlTemplatePath? : any){
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  const window = new BrowserWindow({
     //fullscreen: true
     height: 600,
     width: 1200,
@@ -18,12 +27,20 @@ function createWindow (htmlPath? : any){
     }
   })
 
-  // and load the index.html of the app.
-  if(!htmlPath) htmlPath = 'src/index.html'
-  mainWindow.loadFile(htmlPath);
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // and load the index.html of the app or the html template given.
+  if(!htmlTemplatePath) htmlTemplatePath = 'src/index.html'
+  try{
+    await window.loadFile(htmlTemplatePath);
+    // Open the DevTools.
+    window.webContents.openDevTools();
+    // Build menu from template
+    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate)
+    // Insert Menu
+    Menu.setApplicationMenu(mainMenu)
+  } catch (err){
+    console.log(err)
+  }
+  return window
 };
 
 // This method will be called when Electron has finished
@@ -31,27 +48,38 @@ function createWindow (htmlPath? : any){
 // Some APIs can only be used after this event occurs.
 app.on('ready', async function(){
 
-  var htmlPath = null
-  const calendar = new googleCal.googleCalendar();
+  mainWindow = await createWindow()
+
   if(!calendar.getCredentials()){
-    htmlPath = 'src/modules/googleAuth/googleAuth.html'
+    // @TODO --> Render error message
+    mainWindow.webContents.send('app:router', fs.readFileSync('src/pages/error/error.html', 'utf-8'))
+    mainWindow.webContents.send('id:contents', [ 
+      { id: 'errorMessage', content: calendar.error.message }, 
+      { id: 'errorBody', content: calendar.error.body }
+    ])
+  } else {
+    // oAuth2 ok
+
+    // @TODO -> Check if config file is present
+
+    // @TODO -> if no config file present --> Select calendar
+
+    // Everything is ok, then Show upcomming events
+    getUpcomingEvents()
   }
-  // Autication passed
+  
+});
 
-  // @TODO -> Check if config file is present
-
-  // Show upcomming events
+/**
+ * 
+ */
+async function getUpcomingEvents(){
   var events = await calendar.listEvents(calendar.oAuth2Client)
   console.log(events)
-  htmlPath = 'src/modules/googleConnectCal/googleConnect.html'
-
-  createWindow(htmlPath)
-
-  // Build menu from template
-  const mainMenu = Menu.buildFromTemplate(mainMenuTemplate)
-  // Insert Menu
-  Menu.setApplicationMenu(mainMenu)
-});
+  // Now pass the page will be render render
+  mainWindow.webContents.send('app:router', fs.readFileSync('src/pages/upcomingEvents/upcomingEvents.html', 'utf-8'))
+  mainWindow.webContents.send('ul:elements', { id: 'events', elements: events, template: fs.readFileSync('src/pages/upcomingEvents/event.html', 'utf-8') }) // @TODO <-- Fill values in template
+}
 
 const mainMenuTemplate = [
   {

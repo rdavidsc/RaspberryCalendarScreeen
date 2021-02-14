@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-    "googleapis": "^39.2.0"
+    "googleapis": "^39.2.0",
+    "popper": "^1.0.1"
   }
 }

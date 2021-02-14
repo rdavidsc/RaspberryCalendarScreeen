@@ -11,15 +11,19 @@ export class googleCalendar {
     // created automatically when the authorization flow completes for the first
     // time.
     private TOKEN_PATH = 'src/modules/googleCalendar/token.json';
+    private CONFIG_PATH = 'appConfig.json';
 
     private credentials: any
     private token: string
     public oAuth2Client: any
-    public error: any
+    public error = {
+      message: '',
+      body: ''
+    }
+
     public calendarId: 'bk6d7u7djsv3be47m4n7u7cpao@group.calendar.google.com'
 
-    constructor(){
-    }
+    constructor(){}
 
     /**
      * Check for APP credentials and Create an OAuth2 client with the given credentials
@@ -28,7 +32,8 @@ export class googleCalendar {
         try{
             this.credentials = JSON.parse(fs.readFileSync('src/modules/googleCalendar/credentials.json','utf-8'));
             if(!this.credentials.installed){
-                this.error = "Error: Bad credentials";
+                this.error.message = "Error: Bad credentials.";
+                this.error.body = "Please contact info@gobusinessinc.com";
                 return false;
             }
             const {client_secret, client_id, redirect_uris} = this.credentials.installed;
@@ -36,16 +41,17 @@ export class googleCalendar {
             return this.authorize();
         }
         catch (err) {
-          this.error = err;
           if (err.code === 'ENOENT'){
-            console.log("Cant find file:")
-            console.table(err)
+            //console.log("Cant find file:")
+            //console.table(err)
             this.error.message = "Cant find credentials file"
+            this.error.body = "Please contact info@gobusinessinc.com";
             // @TODO --> Show screen App Error
           } else {
             console.log("Error reading file.")
             console.table(err)
             this.error.message = "Error reading file."
+            this.error.body = "File is corrupt. Please contact info@gobusinessinc.com";
             // @TODO --> Show screen App Error
           }
           return false;
@@ -63,6 +69,7 @@ export class googleCalendar {
             return true;
         } catch (err) {
             this.error = err
+            this.error.message = 'No valid Token'
             return false;
         }
     }
@@ -85,7 +92,7 @@ export class googleCalendar {
      */
     async getTokenFromGoogle(code: string){
         try{
-          await this.oAuth2Client.getToken(code); // <-- OJO Donde queda el token nuevo?
+          this.token = await this.oAuth2Client.getToken(code); // <-- OJO Donde queda el token nuevo?
           this.oAuth2Client.setCredentials(this.token);
           // Store the token to disk for later program executions
           try{
@@ -96,11 +103,13 @@ export class googleCalendar {
           catch (err){
             console.error("Error saving token in a file:",err);
             this.error = err
+            this.error.message = "Error saving token in a file:"
             return false;
           }
         } catch (err){
           console.error('Error retrieving access token', err);
           this.error = err
+          this.error.message = 'Error retrieving access token'
           return false;
         }
       }
@@ -110,7 +119,7 @@ export class googleCalendar {
      * Lists the next 10 events on the user's primary calendar
      */
     async listEvents(auth: any, calendarId?: string) {
-        const calendar = await google.calendar({version: 'v3', auth});
+        const calendar = google.calendar({version: 'v3', auth});
         if(calendarId == undefined) calendarId = 'primary'
         try{
             const result = await calendar.events.list({
@@ -120,7 +129,7 @@ export class googleCalendar {
                 singleEvents: true,
                 orderBy: 'startTime',
             })
-            console.log(result.data.items)
+            //console.log(result.data.items)
             return result.data.items;
         } catch(err){
             console.log('The API returned an error: ' + err)

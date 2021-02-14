@@ -2,47 +2,49 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Upcomming Events - Autentication Required</title>
+    <title>Upcomming Events</title>
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="index.css">
+    <!--script src="assets/js/bootstrap.min.js"></script-->
+    <script src="https://kit.fontawesome.com/8d6082c81d.js" crossorigin="anonymous"></script>
   </head>
   <body>
-    <div class="card">
-      <form>
-        <div class="card-header">
-          <h1>Autentication Required</h1>
-        </div>
-        <div class="card-body">
-          <h2>Welcome to Upcomming Events APP</h2>
-          <p>In order to read your Google Calendar it's required to get an authentication code in the following link:</p>
-          <p><a href="pages/example/example.html" class="btn btn-info">Get the authentication code</a></p>
-          <p>Once you have the code come back here and insert the code:</p>
-            <div>
-              <label>Code: </label>
-              <input type="text" id="authCode">  
-            </div>
-        </div>
-        <div class="card-footer text-right">
-          <button type="submit" class="btn btn-success">Send</button>
-        </div>
-      </form>
-    </div>
-      
-    </card>
+
+    <app-router>
+      <div class="text-center">
+        <h1>Loading...</h1>
+        <p>&nbsp;</p>
+        <i class="fa fa-spinner fa-5x fa-spin"></i>
+      </div>
+    </app-router>
 
     <script>
       const electron = require('electron');
       const {ipcRenderer} = electron;
 
-      const form = document.querySelector('form');
-      form.addEventListener('submit', submitForm);
+      const appRouter = document.querySelector('app-router');
 
-      function submitForm(e){
-        e.preventDefault();
-        const authCode = document.querySelector('#authCode').value;
-        alert(authCode);
-        ipcRenderer.send('data:authCode', authCode);
-      }
+      ipcRenderer.on('app:router', function(e,content){
+          appRouter.innerHTML = content;
+      })
+
+      ipcRenderer.on('id:contents', function(e,contents){
+        if(contents.constructor === Array){
+          for(let i=0;i<contents.length;i++){
+            document.getElementById(contents[i].id).innerText = contents[i].content;
+          }
+        }
+          console.log('Contents',contents);
+      })
+
+      ipcRenderer.on('ul:elements', function(e,obj){
+        const ul = document.getElementById(obj.id);
+        for(let i=0;i<obj.elements.length;i++){
+          let frag = document.createRange().createContextualFragment(obj.template);
+          ul.appendChild(frag);
+        }
+      })
+
     </script>
   </body>
 </html>
