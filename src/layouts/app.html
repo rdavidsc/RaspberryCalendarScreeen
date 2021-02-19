@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Upcomming Events</title>
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../layouts/app.css">
     <!--script src="assets/js/bootstrap.min.js"></script-->
     <script src="https://kit.fontawesome.com/8d6082c81d.js" crossorigin="anonymous"></script>
   </head>
@@ -22,12 +22,13 @@
       const electron = require('electron');
       const {ipcRenderer} = electron;
 
+      // Page content
       const appRouter = document.querySelector('app-router');
-
       ipcRenderer.on('app:router', function(e,content){
           appRouter.innerHTML = content;
       })
 
+      // Change contents from an array of contents using the id
       ipcRenderer.on('id:contents', function(e,contents){
         if(contents.constructor === Array){
           for(let i=0;i<contents.length;i++){
@@ -37,13 +38,14 @@
           console.log('Contents',contents);
       })
 
+      /*/ Set a UL list
       ipcRenderer.on('ul:elements', function(e,obj){
         const ul = document.getElementById(obj.id);
         for(let i=0;i<obj.elements.length;i++){
           let frag = document.createRange().createContextualFragment(obj.template);
           ul.appendChild(frag);
         }
-      })
+      })*/
 
     </script>
   </body>

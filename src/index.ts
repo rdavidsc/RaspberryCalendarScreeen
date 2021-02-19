@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, ipcMain, TouchBarPopover } from 'electron';
 import * as path from 'path';
 import * as googleCal from './modules/googleCalendar/googleCalendar'
+import * as upcomingEvents from './modules/upcomingEvents/upcomingEvents'
 import * as fs from 'fs'
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -10,13 +11,14 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 
 var mainWindow: BrowserWindow
 const calendar = new googleCal.googleCalendar();
+const eventsHandler = new upcomingEvents.upcomingEvents();
 
 
 /**
  * Create a new window usin a html template
  * @param htmlTemplatePath Optional html template 
  */
-async function createWindow (htmlTemplatePath? : any){
+async function createWindow (layout? : any){
   // Create the browser window.
   const window = new BrowserWindow({
     //fullscreen: true
@@ -27,10 +29,10 @@ async function createWindow (htmlTemplatePath? : any){
     }
   })
 
-  // and load the index.html of the app or the html template given.
-  if(!htmlTemplatePath) htmlTemplatePath = 'src/index.html'
+  // and load the layout of the app or the html given.
+  if(!layout) layout = 'src/layouts/app.html'
   try{
-    await window.loadFile(htmlTemplatePath);
+    await window.loadFile(layout);
     // Open the DevTools.
     window.webContents.openDevTools();
     // Build menu from template
@@ -51,8 +53,8 @@ app.on('ready', async function(){
   mainWindow = await createWindow()
 
   if(!calendar.getCredentials()){
-    // @TODO --> Render error message
-    mainWindow.webContents.send('app:router', fs.readFileSync('src/pages/error/error.html', 'utf-8'))
+    // Render error message
+    mainWindow.webContents.send('app:router', fs.readFileSync('src/layouts/error.html', 'utf-8'))
     mainWindow.webContents.send('id:contents', [ 
       { id: 'errorMessage', content: calendar.error.message }, 
       { id: 'errorBody', content: calendar.error.body }
@@ -71,14 +73,16 @@ app.on('ready', async function(){
 });
 
 /**
- * 
+ * Get upcoming events from Google Calendar and wrap them in the HML template
  */
 async function getUpcomingEvents(){
-  var events = await calendar.listEvents(calendar.oAuth2Client)
-  console.log(events)
+  var eventsList = await calendar.listEvents(calendar.oAuth2Client)
+  console.log(eventsList)
+
   // Now pass the page will be render render
-  mainWindow.webContents.send('app:router', fs.readFileSync('src/pages/upcomingEvents/upcomingEvents.html', 'utf-8'))
-  mainWindow.webContents.send('ul:elements', { id: 'events', elements: events, template: fs.readFileSync('src/pages/upcomingEvents/event.html', 'utf-8') }) // @TODO <-- Fill values in template
+  mainWindow.webContents.send('app:router', eventsHandler.eventPageTemplate(eventsList), 'utf-8')
+
+  //mainWindow.webContents.send('ul:elements', { id: 'events', elements: events, template: fs.readFileSync('src/pages/upcomingEvents/event.html', 'utf-8') }) // @TODO <-- Fill values in template
 }
 
 const mainMenuTemplate = [
@@ -99,11 +103,6 @@ const mainMenuTemplate = [
     ]
   }
 ]
-
-ipcMain.on('item:name',function(e, item){
-
-})
-
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
