@@ -77,8 +77,6 @@ app.on('ready', async function(){
  */
 async function getUpcomingEvents(){
   var eventsList = await calendar.listEvents(calendar.oAuth2Client)
-  console.log(eventsList)
-
   // Now pass the page will be render render
   mainWindow.webContents.send('app:router', eventsHandler.eventPageTemplate(eventsList), 'utf-8')
 
