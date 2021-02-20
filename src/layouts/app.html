@@ -10,7 +10,7 @@
   </head>
   <body>
 
-    <app-router>
+    <app-router class="h-100">
       <div class="text-center">
         <h1>Loading...</h1>
         <p>&nbsp;</p>
@@ -37,15 +37,6 @@
         }
           console.log('Contents',contents);
       })
-
-      /*/ Set a UL list
-      ipcRenderer.on('ul:elements', function(e,obj){
-        const ul = document.getElementById(obj.id);
-        for(let i=0;i<obj.elements.length;i++){
-          let frag = document.createRange().createContextualFragment(obj.template);
-          ul.appendChild(frag);
-        }
-      })*/
 
     </script>
   </body>

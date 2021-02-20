@@ -4,3 +4,22 @@ body {
   /* max-width: 38rem; */
   padding: 2rem;
 }
+h1 {
+  font-size: 3vw;
+}
+h2 {
+  font-size: 2vw;
+}
+h3 {
+  font-size: 1vw;
+}
+.clock-time-big{
+  font-size: 12vw;
+  line-height: 3em;
+  flex-wrap: nowrap;
+}
+.clock-time-small{
+  font-size: 2vw;
+  line-height: 3em;
+  flex-wrap: nowrap;
+}

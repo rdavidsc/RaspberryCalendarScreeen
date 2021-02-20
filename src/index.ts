@@ -1,5 +1,5 @@
 import { app, BrowserWindow, Menu, ipcMain, TouchBarPopover } from 'electron';
-import * as path from 'path';
+//import * as path from 'path';
 import * as googleCal from './modules/googleCalendar/googleCalendar'
 import * as upcomingEvents from './modules/upcomingEvents/upcomingEvents'
 import * as fs from 'fs'
@@ -9,7 +9,12 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
-var mainWindow: BrowserWindow
+/**
+ * Main vars and constants
+ */
+let mainWindow: BrowserWindow
+let minCount = 0
+let eventsList: any
 const calendar = new googleCal.googleCalendar();
 const eventsHandler = new upcomingEvents.upcomingEvents();
 
@@ -21,9 +26,9 @@ const eventsHandler = new upcomingEvents.upcomingEvents();
 async function createWindow (layout? : any){
   // Create the browser window.
   const window = new BrowserWindow({
-    //fullscreen: true
-    height: 600,
-    width: 1200,
+    fullscreen: true,
+    //height: 600,
+    //width: 1200,
     webPreferences:{
       nodeIntegration: true
     }
@@ -34,7 +39,7 @@ async function createWindow (layout? : any){
   try{
     await window.loadFile(layout);
     // Open the DevTools.
-    window.webContents.openDevTools();
+    // window.webContents.openDevTools();
     // Build menu from template
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate)
     // Insert Menu
@@ -66,21 +71,47 @@ app.on('ready', async function(){
 
     // @TODO -> if no config file present --> Select calendar
 
-    // Everything is ok, then Show upcomming events
-    getUpcomingEvents()
+    // Everything is ok, then go to main loop. 
+    mainLoop()
   }
   
 });
+
+
+function mainLoop(){
+
+  // Set hour in clock
+
+  // Every 5 min: Show upcomming events
+  getUpcomingEvents();
+
+
+  setTimeout(() => {
+    mainLoop();
+  }, 30000)
+}
+
 
 /**
  * Get upcoming events from Google Calendar and wrap them in the HML template
  */
 async function getUpcomingEvents(){
-  var eventsList = await calendar.listEvents(calendar.oAuth2Client)
-  // Now pass the page will be render render
-  mainWindow.webContents.send('app:router', eventsHandler.eventPageTemplate(eventsList), 'utf-8')
 
-  //mainWindow.webContents.send('ul:elements', { id: 'events', elements: events, template: fs.readFileSync('src/pages/upcomingEvents/event.html', 'utf-8') }) // @TODO <-- Fill values in template
+  
+  if(!eventsList) {
+    // Get event list synchronously the first time
+    eventsList = await calendar.listEvents(calendar.oAuth2Client) // @TODO <-- Catch conetion error
+  } else {
+    // Get new event list every five minutes
+    minCount += 1
+    if( minCount > 10 ){
+      minCount = 0
+      eventsList = await calendar.listEvents(calendar.oAuth2Client) // @TODO <-- Catch conetion error
+    }
+  }
+
+  // Now pass the page will be render render
+  mainWindow.webContents.send('app:router', eventsHandler.generateSccreen(eventsList), 'utf-8')
 }
 
 const mainMenuTemplate = [
