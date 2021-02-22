@@ -4,29 +4,47 @@ export class upcomingEvents {
 
     constructor(){}
 
+    public locale = ['es-ES']
+    public roomName = 'La selva'
 
+    generateSccreen(upcommingEvents: any, inEvent: boolean = false){
 
+        var newEventList: any[] = []
+        var nextEvent = upcommingEvents[0]
+        if(upcommingEvents.length != 0){
+            // Check if is running an event now
+            let now = new Date()
+            let firstEventStart = new Date(nextEvent.start.dateTime)
+            let firstEventEnd = new Date(nextEvent.end.dateTime)
+            
+            console.log(firstEventStart < now, now <firstEventEnd, firstEventStart, now, firstEventEnd, nextEvent.summary)
 
-    generateSccreen(events: any[], inEvent: boolean = true){
-
+            if(firstEventStart < now && now <firstEventEnd){
+                inEvent = true
+                for(let i=1;i<upcommingEvents.length;i++){
+                    newEventList.push(upcommingEvents[i])
+                }
+                //newEventList.splice(0, 1)
+            } 
+        }
 
         if(inEvent){
             return `<div class="row h-100">
-            <div class="col-sm-8">
-                ${this.inEventTemplate(events[0])}
+            <div class="col-sm-8 h-100 d-flex flex-column">
+                ${this.inEventTemplate(nextEvent)}
+                ${this.clockInEventTemplate()}
             </div>
             <div class="col-sm-4 h-100 d-flex flex-column">
-                ${this.clockTemplate(inEvent)}
-                ${this.eventListTemplate(events)}
+                ${this.eventListTemplate(newEventList)}
                 </div>
             </div>`
         } else {
-            return `<div class="row d-flex h-100">
-            <div class="col-sm-8">
+            return `<div class="row h-100">
+            <div class="col-sm-8 h-100 d-flex flex-column">
                 ${this.clockTemplate()}
             </div>
-            <div class="col-sm-4">
-                ${this.eventListTemplate(events)}
+            <div class="col-sm-4 h-100 d-flex flex-column">
+                ${this.eventListTemplate(upcommingEvents)}
             </div>
         </div>`
         }
@@ -37,7 +55,7 @@ export class upcomingEvents {
      * Renders a list of events from an array
      * @param events From Google API
      */
-    eventListTemplate(events: any[] , roomName?: string){
+    eventListTemplate(events: any , roomName?: string){
 
         // Sub heading needed?
         let subheader = ``
@@ -66,7 +84,7 @@ export class upcomingEvents {
                         <div class="card-header">
                             <h1>${roomName}</h1>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body events-list-body">
                             ${ subheader ? `<h2>${subheader} </h2>` : `` }
                             ${eventListTemplate}
                         </div>
@@ -92,11 +110,11 @@ export class upcomingEvents {
      * @param event 
      */
     inEventTemplate(event: any){
-        return `<div class="card d-flex h-100 text-center">
+        return `<div class="card text-center align-self-start flex-grow-1 h-100 w-100">
                   <div class="card-header text-center">
                     <h1>En este momento</h1>
                   </div>
-                  <div class="card-body text-center">
+                  <div class="card-body text-center d-flex h-100 flex-column justify-content-center">
                       <h2>${event.summary} </h2>
                       <p>From ${this.timeFormat(event.start.dateTime)} to ${this.timeFormat(event.end.dateTime)}</p>
                       ${ event.description ? `<p>${event.description}</p>` : `` }
@@ -107,30 +125,50 @@ export class upcomingEvents {
 
     /**
      * Functions that returns basic event content from a template
-     * @param inEvent (Boolean) Is running an event in the moment?
-     * @param eventName The name of the event
      */
-    clockTemplate(inEvent?: boolean){
+    clockTemplate(){
         let time = new Date()
-        let header: string
-        let subheader: string
+        let header = ``
+        let subheader = ``
 
-        if(!inEvent){
-            header = `<div class="card-header text-center">
-                <h1>${this.dateFormat(time.toString(),['es-ES'])}</h1>
-            </div>`
+        if(this.roomName){
+            header = `Sala: ${this.roomName} `
+            subheader = this.dateFormat(time.toString())
+        } else {
+            header = this.dateFormat(time.toString())
         }
 
-        return `<div class="card text-center${inEvent? 'align-self-start w-100 clock-card-in-event' : ' d-flex h-100 flex-grow-1'}">
-                    ${header ? header : `` }
-                  <div class="card-body text-center">
-                    
-                    ${ subheader ? `<h2>${subheader} </h2>` : `` }
-                    <div class="${ inEvent ? 'clock-time-small': 'clock-time-big'}"> ${this.timeFormat(time.toString())} </div>
-                  </div>
+
+
+        return `<div class="card text-center align-self-stretch flex-grow-1 h-100 w-100">
+                    <div class="card-header text-center">
+                        <h1>${header}</h1>
+                    </div>
+                    <div class="card-body text-center d-flex h-100 flex-column justify-content-center">
+                        <div class="clock-time-big"> ${this.timeFormat(time.toString())} </div>
+                        <h2>${subheader}</h2>
+
+                    </div>
                 </div>`;
     }    
 
+/**
+     * Functions that returns basic event content from a template
+     */
+    clockInEventTemplate(){
+        let time = new Date()
+
+        return `<div class="card text-center align-self-start w-100 clock-card-in-event">
+                    <div class="card-body text-center">
+                        <div class="clock-time-small">
+                                ${this.timeFormat(time.toString())} 
+                        </div>
+                        <div class="clock-date-small">
+                            ${this.dateFormat(time.toString(),{ year: 'numeric', month: 'numeric', day: 'numeric' })}
+                        </div>
+                    </div>
+                </div>`;
+    }    
 
     /**
      * 
@@ -138,22 +176,23 @@ export class upcomingEvents {
      * @param locale 
      * @param options 
      */
-    timeFormat(dateTime: string, locale: any[] = [], options = { hour: 'numeric', minute: '2-digit', hour12: true }){
+    timeFormat(dateTime: string, options?: any){
 
         if(dateTime == undefined) return ``
+        if(!options) options = { hour: 'numeric', minute: '2-digit', hour12: true }
 
         let d = new Date(dateTime)
         // Reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
-        return d.toLocaleTimeString(locale, options).toLowerCase();
+        return d.toLocaleTimeString(this.locale, options).toLowerCase();
     }
     
-    dateFormat(dateTime: string, locale: any[] = [], options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }){
-
+    dateFormat(dateTime: string, options?: any){
         if(dateTime == undefined) return ``
+        if(!options) options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
 
         let d = new Date(dateTime)
         // Reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
-        return d.toLocaleDateString(locale, options);
+        return d.toLocaleDateString(this.locale, options);
     }
 
 }

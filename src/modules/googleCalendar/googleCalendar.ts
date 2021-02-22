@@ -125,11 +125,11 @@ export class googleCalendar {
             const result = await calendar.events.list({
                 calendarId: calendarId,
                 timeMin: (new Date()).toISOString(),
-                maxResults: 3,
+                maxResults: 6,
                 singleEvents: true,
                 orderBy: 'startTime',
             })
-            //console.log(result.data.items)
+            console.log('Refresh',result.data.items[0].summary)
             return result.data.items;
         } catch(err){
             console.log('The API returned an error: ' + err)

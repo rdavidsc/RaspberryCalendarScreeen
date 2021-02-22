@@ -111,6 +111,7 @@ async function getUpcomingEvents(){
   }
 
   // Now pass the page will be render render
+  console.log(eventsList[0].summary)
   mainWindow.webContents.send('app:router', eventsHandler.generateSccreen(eventsList), 'utf-8')
 }
 
