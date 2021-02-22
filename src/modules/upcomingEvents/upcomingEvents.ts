@@ -7,21 +7,21 @@ export class upcomingEvents {
 
 
 
-    generateSccreen(events: any[], inEvent: boolean = false){
+    generateSccreen(events: any[], inEvent: boolean = true){
 
 
         if(inEvent){
-            return `<div class="row">
+            return `<div class="row h-100">
             <div class="col-sm-8">
                 ${this.inEventTemplate(events[0])}
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-4 h-100 d-flex flex-column">
+                ${this.clockTemplate(inEvent)}
                 ${this.eventListTemplate(events)}
-                ${this.clockTemplate(events[0].summary)}
-            </div>
+                </div>
             </div>`
         } else {
-            return `<div class="row">
+            return `<div class="row d-flex h-100">
             <div class="col-sm-8">
                 ${this.clockTemplate()}
             </div>
@@ -61,14 +61,16 @@ export class upcomingEvents {
             eventListTemplate = `<ul id="events"> ${eventsList}</ul>`
         }
 
-        return `<div class="card">
-                  <div class="card-header">
-                    <h1>${roomName}</h1>
-                  </div>
-                  <div class="card-body">
-                      ${ subheader ? `<h2>${subheader} </h2>` : `` }
-                      ${eventListTemplate}
-                  </div>
+        return `<div class="card align-self-stretch flex-grow-1 h-100">
+                    
+                        <div class="card-header">
+                            <h1>${roomName}</h1>
+                        </div>
+                        <div class="card-body">
+                            ${ subheader ? `<h2>${subheader} </h2>` : `` }
+                            ${eventListTemplate}
+                        </div>
+                    
                 </div>`;
         }
 
@@ -90,7 +92,7 @@ export class upcomingEvents {
      * @param event 
      */
     inEventTemplate(event: any){
-        return `<div class="card">
+        return `<div class="card d-flex h-100 text-center">
                   <div class="card-header text-center">
                     <h1>En este momento</h1>
                   </div>
@@ -108,25 +110,23 @@ export class upcomingEvents {
      * @param inEvent (Boolean) Is running an event in the moment?
      * @param eventName The name of the event
      */
-    clockTemplate(eventName?: string){
+    clockTemplate(inEvent?: boolean){
         let time = new Date()
         let header: string
         let subheader: string
 
-        if(eventName){
-            header = eventName
-            subheader = this.dateFormat(time.toString(),['es-ES'])
-        } else {
-            header = this.dateFormat(time.toString(),['es-ES'])
+        if(!inEvent){
+            header = `<div class="card-header text-center">
+                <h1>${this.dateFormat(time.toString(),['es-ES'])}</h1>
+            </div>`
         }
 
-        return `<div class="card">
-                  <div class="card-header text-center">
-                    <h1>${header}</h1>
-                  </div>
+        return `<div class="card text-center${inEvent? 'align-self-start w-100 clock-card-in-event' : ' d-flex h-100 flex-grow-1'}">
+                    ${header ? header : `` }
                   <div class="card-body text-center">
-                      ${ subheader ? `<h2>${subheader} </h2>` : `` }
-                      <div class="${ eventName ? 'clock-time-small': 'clock-time-big'}"> ${this.timeFormat(time.toString())} </div>
+                    
+                    ${ subheader ? `<h2>${subheader} </h2>` : `` }
+                    <div class="${ inEvent ? 'clock-time-small': 'clock-time-big'}"> ${this.timeFormat(time.toString())} </div>
                   </div>
                 </div>`;
     }    
@@ -155,8 +155,5 @@ export class upcomingEvents {
         // Reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
         return d.toLocaleDateString(locale, options);
     }
-
-
-
 
 }

@@ -125,7 +125,7 @@ export class googleCalendar {
             const result = await calendar.events.list({
                 calendarId: calendarId,
                 timeMin: (new Date()).toISOString(),
-                maxResults: 5,
+                maxResults: 3,
                 singleEvents: true,
                 orderBy: 'startTime',
             })
