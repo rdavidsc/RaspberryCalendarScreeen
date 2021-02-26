@@ -43,3 +43,7 @@ h3 {
 .events-list-body{
   overflow-y: hidden;
 }
+.in-event h2{
+  font-size: 5vw;
+  flex-wrap: nowrap;
+}

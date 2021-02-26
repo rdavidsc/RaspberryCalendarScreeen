@@ -125,12 +125,19 @@ export class googleCalendar {
             const result = await calendar.events.list({
                 calendarId: calendarId,
                 timeMin: (new Date()).toISOString(),
-                maxResults: 6,
+                maxResults: 10,
                 singleEvents: true,
                 orderBy: 'startTime',
             })
-            console.log('Refresh',result.data.items[0].summary)
-            return result.data.items;
+            // Filter only events with start and end time (delete all day events)
+            let eventList: any[] = []
+            for(let i=0; i< result.data.items.length; i++){
+              if(result.data.items[i].start.dateTime != undefined && result.data.items[i].end.dateTime != undefined){
+                eventList.push(result.data.items[i])
+              }
+            }
+
+            return eventList;
         } catch(err){
             console.log('The API returned an error: ' + err)
             this.error = err

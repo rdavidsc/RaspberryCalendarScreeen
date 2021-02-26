@@ -6,27 +6,68 @@ export class upcomingEvents {
 
     public locale = ['es-ES']
     public roomName = 'La selva'
+    
 
     generateSccreen(upcommingEvents: any, inEvent: boolean = false){
 
         var newEventList: any[] = []
-        var nextEvent = upcommingEvents[0]
+        let dateGorupedEventList: any[] = []
+        var nextEvent: any
+        let now = new Date()
+
         if(upcommingEvents.length != 0){
             // Check if is running an event now
-            let now = new Date()
+            nextEvent = upcommingEvents[0]
             let firstEventStart = new Date(nextEvent.start.dateTime)
             let firstEventEnd = new Date(nextEvent.end.dateTime)
             
             console.log(firstEventStart < now, now <firstEventEnd, firstEventStart, now, firstEventEnd, nextEvent.summary)
 
+            // Is an event running now?
             if(firstEventStart < now && now <firstEventEnd){
                 inEvent = true
                 for(let i=1;i<upcommingEvents.length;i++){
                     newEventList.push(upcommingEvents[i])
                 }
-                //newEventList.splice(0, 1)
-            } 
+            } else {
+                newEventList = upcommingEvents
+            }
+
+            // order list by day
+            let eventCounter = 0
+            let listGroupedByday: any = {}
+            for(let j=0; j<newEventList.length; j++){
+                eventCounter++
+                let eventDate = new Date(newEventList[j].start.dateTime).setHours(0,0,0,0)
+                // Check for today events
+                let todayDate = new Date().setHours(0,0,0,0)
+                if(todayDate == eventDate){
+                    if(!('today' in listGroupedByday)){
+                        listGroupedByday.today = new Array()
+                    }
+                    listGroupedByday.today.push(newEventList[j])
+                }
+
+                // Check for tomorrow events
+                let tomorrowDate = new Date().setHours(0,0,0,0) + 86400000
+                if(tomorrowDate == eventDate){
+                    if(!('tomorrow' in listGroupedByday)){
+                        listGroupedByday.tomorrow = new Array()
+                    } 
+                    listGroupedByday.tomorrow.push(newEventList[j])
+                }
+
+                // Chek for later events
+                let day = this.dateFormat(newEventList[j].start.dateTime,{ year: 'numeric'}) +'-'+ this.dateFormat(newEventList[j].start.dateTime,{month: '2-digit'})+'-'+this.dateFormat(newEventList[j].start.dateTime,{day: '2-digit' })
+                if(!(day in listGroupedByday)){
+                    listGroupedByday[day] = new Array()
+                } 
+                listGroupedByday[day].push(newEventList[j])
+            }
+            console.log("QUE HAY", listGroupedByday)
+
         }
+
 
         if(inEvent){
             return `<div class="row h-100">
@@ -60,9 +101,9 @@ export class upcomingEvents {
         // Sub heading needed?
         let subheader = ``
         if(roomName){
-            subheader = `Upcoming Events:`
+            subheader = `Upcoming:`
         } else {
-            roomName = `Upcoming Events`
+            roomName = `Upcomin`
         }
 
         // Generate the template for the list of events
@@ -114,7 +155,7 @@ export class upcomingEvents {
                   <div class="card-header text-center">
                     <h1>En este momento</h1>
                   </div>
-                  <div class="card-body text-center d-flex h-100 flex-column justify-content-center">
+                  <div class="card-body text-center d-flex h-100 flex-column justify-content-center in-event">
                       <h2>${event.summary} </h2>
                       <p>From ${this.timeFormat(event.start.dateTime)} to ${this.timeFormat(event.end.dateTime)}</p>
                       ${ event.description ? `<p>${event.description}</p>` : `` }
