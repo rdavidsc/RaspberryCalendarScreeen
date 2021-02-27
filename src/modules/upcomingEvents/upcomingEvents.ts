@@ -2,18 +2,23 @@
 
 export class upcomingEvents {
 
-    constructor(){}
+    constructor(name?: string){
+        this.roomName = name
+    }
 
     public locale = ['es-ES']
     public roomName = 'La selva'
     
 
-    generateSccreen(upcommingEvents: any, inEvent: boolean = false){
+    generateSccreen(upcommingEvents: any){
 
-        var newEventList: any[] = []
-        let dateGorupedEventList: any[] = []
-        var nextEvent: any
+
+        let inEvent: boolean = false
+        let newEventList: any[] = []
+        let listGroupedByday: any = {}
+        let nextEvent: any
         let now = new Date()
+        let eventCounter = 0
 
         if(upcommingEvents.length != 0){
             // Check if is running an event now
@@ -34,77 +39,107 @@ export class upcomingEvents {
             }
 
             // order list by day
-            let eventCounter = 0
-            let listGroupedByday: any = {}
+            
             for(let j=0; j<newEventList.length; j++){
                 eventCounter++
-                let eventDate = new Date(newEventList[j].start.dateTime).setHours(0,0,0,0)
-                // Check for today events
-                let todayDate = new Date().setHours(0,0,0,0)
-                if(todayDate == eventDate){
-                    if(!('today' in listGroupedByday)){
-                        listGroupedByday.today = new Array()
-                    }
-                    listGroupedByday.today.push(newEventList[j])
-                }
+                if(eventCounter == 6) break
 
-                // Check for tomorrow events
-                let tomorrowDate = new Date().setHours(0,0,0,0) + 86400000
-                if(tomorrowDate == eventDate){
-                    if(!('tomorrow' in listGroupedByday)){
-                        listGroupedByday.tomorrow = new Array()
-                    } 
-                    listGroupedByday.tomorrow.push(newEventList[j])
-                }
-
-                // Chek for later events
                 let day = this.dateFormat(newEventList[j].start.dateTime,{ year: 'numeric'}) +'-'+ this.dateFormat(newEventList[j].start.dateTime,{month: '2-digit'})+'-'+this.dateFormat(newEventList[j].start.dateTime,{day: '2-digit' })
                 if(!(day in listGroupedByday)){
                     listGroupedByday[day] = new Array()
                 } 
                 listGroupedByday[day].push(newEventList[j])
             }
-            console.log("QUE HAY", listGroupedByday)
+            //console.log("QUE HAY", listGroupedByday)
 
         }
+
+        let upcomingCardTemplate = `<div class="col-sm-4 h-100 d-flex flex-column">
+                ${this.upcomingEventsTemplate(listGroupedByday)}
+            </div>`
 
 
         if(inEvent){
             return `<div class="row h-100">
-            <div class="col-sm-8 h-100 d-flex flex-column">
+            <div class="col-sm-${eventCounter==0 ?'12':'8'}  8 h-100 d-flex flex-column">
                 ${this.inEventTemplate(nextEvent)}
                 ${this.clockInEventTemplate()}
             </div>
-            <div class="col-sm-4 h-100 d-flex flex-column">
-                ${this.eventListTemplate(newEventList)}
-                </div>
+            ${eventCounter==0 ?``:upcomingCardTemplate}
             </div>`
         } else {
             return `<div class="row h-100">
-            <div class="col-sm-8 h-100 d-flex flex-column">
+            <div class="col-sm-${eventCounter==0 ?'12':'8'} h-100 d-flex flex-column">
                 ${this.clockTemplate()}
             </div>
-            <div class="col-sm-4 h-100 d-flex flex-column">
-                ${this.eventListTemplate(upcommingEvents)}
-            </div>
+            ${eventCounter==0 ?``:upcomingCardTemplate}
         </div>`
         }
     }
 
 
     /**
-     * Renders a list of events from an array
-     * @param events From Google API
+     * 
+     * @param listGroupedByday object with Events grouped by index "today", "tomorrow" or the day
      */
-    eventListTemplate(events: any , roomName?: string){
+    upcomingEventsTemplate(listGroupedByday: any){
 
-        // Sub heading needed?
-        let subheader = ``
-        if(roomName){
-            subheader = `Upcoming:`
-        } else {
-            roomName = `Upcomin`
+        // Render Today events
+        let todayEvents = ``
+        if('today' in listGroupedByday){
+            //todayEvents  = `<h2>Today:</h2>${this.eventListTemplate(listGroupedByday.today)}`
         }
+        // Render Today events
+        let tomorrowEvents = ``
+        if('today' in listGroupedByday){
+            //tomorrowEvents  = `<h2>Tomorrow:</h2>${this.eventListTemplate(listGroupedByday.tomorrow)}`
+        }
+
+
+        // Render later events
+        let laterEvents = ``
+        for (let key in listGroupedByday){
+            let d = new Date(key)
+            if(!isNaN(d.getTime())){
+                //console.log(key, listGroupedByday[key][0].start.dateTime)
+                laterEvents += `<h2>${this.isTodayOrTomorrow(listGroupedByday[key][0].start.dateTime)}</h2>${this.eventListTemplate(listGroupedByday[key])}`
+            }
+        }
+
+        return `<div class="card align-self-stretch flex-grow-1 h-100">
+                    <div class="card-header">
+                        <h1>Upcoming</h1>
+                    </div>
+                    <div class="card-body events-list-body">
+                        ${todayEvents}
+                        ${tomorrowEvents}
+                        ${laterEvents}
+                    </div>
+                </div>`;
+    }
+
+    isTodayOrTomorrow(date: string){
+        let today = new Date()
+        let tomorrow = new Date()
+        tomorrow.setDate(new Date().getDate()+1)
+
+        let day = new Date(date)
+        console.log("TODAY:",today.toDateString(), day.toDateString(), date)
+
+        if(today.toDateString() == day.toDateString()){
+            return `Today`
+        }
+        if(tomorrow.toDateString() == day.toDateString()){
+            return `Tomorrow`
+        }
+        return this.dateFormat(date, { weekday: 'long', month: 'short', day: 'numeric' })
+    }
+
+    /**
+     * Renders a list of events from an array
+     * @param events Array of any
+     */
+    eventListTemplate(events: any){
 
         // Generate the template for the list of events
         let eventListTemplate = ``
@@ -119,18 +154,7 @@ export class upcomingEvents {
 
             eventListTemplate = `<ul id="events"> ${eventsList}</ul>`
         }
-
-        return `<div class="card align-self-stretch flex-grow-1 h-100">
-                    
-                        <div class="card-header">
-                            <h1>${roomName}</h1>
-                        </div>
-                        <div class="card-body events-list-body">
-                            ${ subheader ? `<h2>${subheader} </h2>` : `` }
-                            ${eventListTemplate}
-                        </div>
-                    
-                </div>`;
+        return eventListTemplate
         }
 
     /**
@@ -141,8 +165,8 @@ export class upcomingEvents {
         // @TOD --> Format dates correctly
       
         return `<h3>${event.summary}</h3>
-                  <p>From ${this.timeFormat(event.start.dateTime)} to ${this.timeFormat(event.end.dateTime)}</p>
-                  ${ event.description ? `<p>${event.description}</p>` : `` }`;
+                  <p>From ${this.timeFormat(event.start.dateTime)} to ${this.timeFormat(event.end.dateTime)}</p>`;
+                  //${ event.description ? `<p>${event.description}</p>` : `` }`;
     }
 
 

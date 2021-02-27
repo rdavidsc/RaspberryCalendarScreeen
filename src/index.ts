@@ -26,9 +26,9 @@ const eventsHandler = new upcomingEvents.upcomingEvents();
 async function createWindow (layout? : any){
   // Create the browser window.
   const window = new BrowserWindow({
-    fullscreen: true,
-    //height: 600,
-    //width: 1200,
+    //fullscreen: true,
+    height: 800,
+    width: 1280,
     webPreferences:{
       nodeIntegration: true
     }
