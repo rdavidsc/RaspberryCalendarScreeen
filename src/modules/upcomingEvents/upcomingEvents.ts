@@ -2,12 +2,12 @@
 
 export class upcomingEvents {
 
-    constructor(name?: string){
-        this.roomName = name
+    constructor(config?: string){
+        this.config = config
     }
 
-    public locale = ['es-ES']
-    public roomName = 'La selva'
+    //public locale = ['es-ES']
+    public config:any
     
 
     generateSccreen(upcommingEvents: any){
@@ -26,7 +26,7 @@ export class upcomingEvents {
             let firstEventStart = new Date(nextEvent.start.dateTime)
             let firstEventEnd = new Date(nextEvent.end.dateTime)
             
-            console.log(firstEventStart < now, now <firstEventEnd, firstEventStart, now, firstEventEnd, nextEvent.summary)
+            //console.log(firstEventStart < now, now <firstEventEnd, firstEventStart, now, firstEventEnd, nextEvent.summary)
 
             // Is an event running now?
             if(firstEventStart < now && now <firstEventEnd){
@@ -101,14 +101,13 @@ export class upcomingEvents {
         for (let key in listGroupedByday){
             let d = new Date(key)
             if(!isNaN(d.getTime())){
-                //console.log(key, listGroupedByday[key][0].start.dateTime)
                 laterEvents += `<h2>${this.isTodayOrTomorrow(listGroupedByday[key][0].start.dateTime)}</h2>${this.eventListTemplate(listGroupedByday[key])}`
             }
         }
 
         return `<div class="card align-self-stretch flex-grow-1 h-100">
                     <div class="card-header">
-                        <h1>Upcoming</h1>
+                        <h1>Próximamente</h1>
                     </div>
                     <div class="card-body events-list-body">
                         ${todayEvents}
@@ -124,15 +123,14 @@ export class upcomingEvents {
         tomorrow.setDate(new Date().getDate()+1)
 
         let day = new Date(date)
-        console.log("TODAY:",today.toDateString(), day.toDateString(), date)
-
+        
         if(today.toDateString() == day.toDateString()){
             return `Today`
         }
         if(tomorrow.toDateString() == day.toDateString()){
             return `Tomorrow`
         }
-        return this.dateFormat(date, { weekday: 'long', month: 'short', day: 'numeric' })
+        return this.dateFormat(date, { weekday: 'long', month: 'long', day: 'numeric' })
     }
 
     /**
@@ -146,11 +144,10 @@ export class upcomingEvents {
         if(events.length == 0){
             eventListTemplate = `<p>There are no upcoming events</p>`
         } else {
-            let eventsList = "<ul>";
+            let eventsList = ``;
             for (let i = 0; i < events.length; i++){
               eventsList += `<li>${ this.eventTemplate(events[i]) }</li>`;
             }
-            eventsList += "</ul>";
 
             eventListTemplate = `<ul id="events"> ${eventsList}</ul>`
         }
@@ -165,7 +162,7 @@ export class upcomingEvents {
         // @TOD --> Format dates correctly
       
         return `<h3>${event.summary}</h3>
-                  <p>From ${this.timeFormat(event.start.dateTime)} to ${this.timeFormat(event.end.dateTime)}</p>`;
+                  <p>From ${this.timeFormat(event.start.dateTime)} to ${this.timeFormat(event.end.dateTime)}</p>` //.replace(' 0:', ' 12:')
                   //${ event.description ? `<p>${event.description}</p>` : `` }`;
     }
 
@@ -175,11 +172,19 @@ export class upcomingEvents {
      * @param event 
      */
     inEventTemplate(event: any){
+        let header  = `En este momento`
+        let subheader = ``
+        if(this.config.roomName!= undefined){
+            subheader =  `<p>${header}<br>&nbsp;</p>`
+            header =  `Sala: ${this.config.roomName}`
+        }
+
         return `<div class="card text-center align-self-start flex-grow-1 h-100 w-100">
                   <div class="card-header text-center">
-                    <h1>En este momento</h1>
+                    <h1>${header}</h1>
                   </div>
                   <div class="card-body text-center d-flex h-100 flex-column justify-content-center in-event">
+                    ${subheader}
                       <h2>${event.summary} </h2>
                       <p>From ${this.timeFormat(event.start.dateTime)} to ${this.timeFormat(event.end.dateTime)}</p>
                       ${ event.description ? `<p>${event.description}</p>` : `` }
@@ -196,8 +201,8 @@ export class upcomingEvents {
         let header = ``
         let subheader = ``
 
-        if(this.roomName){
-            header = `Sala: ${this.roomName} `
+        if(this.config.roomName != undefined){
+            header = `Sala: ${this.config.roomName} `
             subheader = this.dateFormat(time.toString())
         } else {
             header = this.dateFormat(time.toString())
@@ -211,7 +216,7 @@ export class upcomingEvents {
                     </div>
                     <div class="card-body text-center d-flex h-100 flex-column justify-content-center">
                         <div class="clock-time-big"> ${this.timeFormat(time.toString())} </div>
-                        <h2>${subheader}</h2>
+                        <h2 class="clock-date-big">${subheader}</h2>
 
                     </div>
                 </div>`;
@@ -238,7 +243,6 @@ export class upcomingEvents {
     /**
      * 
      * @param dateTime 
-     * @param locale 
      * @param options 
      */
     timeFormat(dateTime: string, options?: any){
@@ -248,7 +252,7 @@ export class upcomingEvents {
 
         let d = new Date(dateTime)
         // Reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
-        return d.toLocaleTimeString(this.locale, options).toLowerCase();
+        return d.toLocaleTimeString('en-EN', options).toLowerCase();
     }
     
     dateFormat(dateTime: string, options?: any){
@@ -257,7 +261,10 @@ export class upcomingEvents {
 
         let d = new Date(dateTime)
         // Reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
-        return d.toLocaleDateString(this.locale, options);
+        let dText = d.toLocaleDateString(this.config.locale, options)
+
+        // Capitalize first letter
+        return dText.charAt(0).toUpperCase() + dText.slice(1);
     }
 
 }

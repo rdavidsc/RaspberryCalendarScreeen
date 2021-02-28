@@ -14,9 +14,10 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
  */
 let mainWindow: BrowserWindow
 let minCount = 0
+let config: any
 let eventsList: any
 const calendar = new googleCal.googleCalendar();
-const eventsHandler = new upcomingEvents.upcomingEvents();
+let eventsHandler: upcomingEvents.upcomingEvents
 
 
 /**
@@ -26,9 +27,9 @@ const eventsHandler = new upcomingEvents.upcomingEvents();
 async function createWindow (layout? : any){
   // Create the browser window.
   const window = new BrowserWindow({
-    //fullscreen: true,
-    height: 800,
-    width: 1280,
+    fullscreen: true,
+    //height: 800,
+    //width: 1280,
     webPreferences:{
       nodeIntegration: true
     }
@@ -68,8 +69,12 @@ app.on('ready', async function(){
     // oAuth2 ok
 
     // @TODO -> Check if config file is present
+    if(getConfig()){
 
-    // @TODO -> if no config file present --> Select calendar
+    }
+
+    // @TODO -> if no config file present --> Select calendar, room name and language
+    eventsHandler= new upcomingEvents.upcomingEvents(config);
 
     // Everything is ok, then go to main loop. 
     mainLoop()
@@ -91,6 +96,18 @@ function mainLoop(){
   }, 30000)
 }
 
+/**
+ * Function that reads config.json and load config object
+ */
+function getConfig() {
+  try{
+    config = JSON.parse(fs.readFileSync('config.json', 'utf-8'))
+    return true
+  } catch (err){
+    console.log(err)
+    return false
+  }  
+}
 
 /**
  * Get upcoming events from Google Calendar and wrap them in the HML template
@@ -111,7 +128,6 @@ async function getUpcomingEvents(){
   }
 
   // Now pass the page will be render render
-  console.log(eventsList[0].summary)
   mainWindow.webContents.send('app:router', eventsHandler.generateSccreen(eventsList), 'utf-8')
 }
 

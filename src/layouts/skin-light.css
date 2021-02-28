@@ -1,0 +1,25 @@
+
+body {
+  /* Background image */
+  background-image: url("../assets/img/myoffice-Sala-de-Conf-y-Eventos_opt.jpg"); /* The image used */
+  background-color: #fefefe; /* Used if the image is unavailable */
+  /* height: 800px;  You must set a specified height */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-size: cover; /* Resize the background image to cover the entire container */
+}
+.card{
+  box-shadow:  none;
+  background: none;
+}
+.card-header{
+  background-color: #fff;
+  opacity: 1;
+}
+.card-body{
+  background-color: #fff;
+  opacity: 0.90;
+}
+li{
+  background-color: #e0e0e0;
+}

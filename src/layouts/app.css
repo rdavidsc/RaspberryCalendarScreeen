@@ -12,10 +12,27 @@ h1 {
   font-size: 3vw;
 }
 h2 {
-  font-size: 2vw;
+  font-size: 1.5vw;
 }
 h3 {
   font-size: 1vw;
+  font-weight: bold;
+  line-height: 1.5em;
+}
+p {
+  font-size: 1vw;
+  line-height: 1em;
+}
+ul {
+  list-style-type:none;
+  padding: 0;
+}
+li{
+  border: 1px solid #e0e0e0;
+  background-color: #f6f6f6;
+  border-radius: 5px;
+  margin: 5px 0 0 0;
+  padding: 5px 0 0 5px;
 }
 .clock-body{
   align-items: center;
@@ -30,6 +47,10 @@ h3 {
   font-size: 5vw;
   flex-wrap: nowrap;
 }
+.clock-date-big{
+  font-size: 3vw;
+  flex-wrap: nowrap;
+}
 .clock-date-small{
   font-size: 3vw;
   flex-wrap: nowrap;
@@ -38,12 +59,19 @@ h3 {
   margin-top: 2vw;
 }
 .card{
-  border-radius: 1vW;
+  border-radius: 15px;
+  box-shadow:  5px 5px #f0f0f0;
+}
+.card-body{
+  background-color: #fff;
 }
 .events-list-body{
   overflow-y: hidden;
 }
 .in-event h2{
   font-size: 5vw;
+}
+.in-event p{
+  font-size: 3vw;
   flex-wrap: nowrap;
 }
