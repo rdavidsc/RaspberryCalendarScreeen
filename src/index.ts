@@ -28,8 +28,10 @@ async function createWindow (layout? : any){
   // Create the browser window.
   const window = new BrowserWindow({
     fullscreen: true,
-    //height: 800,
     //width: 1280,
+    //height: 800,
+    //width: 880,
+    //height: 480,
     webPreferences:{
       nodeIntegration: true
     }
